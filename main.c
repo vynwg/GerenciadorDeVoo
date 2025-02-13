@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
+#include <string.h>
+#include <ctype.h>
 
 struct tree {
     char nome[30];
@@ -35,31 +37,73 @@ void printMenuVoo(char voo[8]) {
     printf("\n");
 }
 
-int addPassageiro(char voo[8]) {
-    return 0;
+struct tree *insert(struct tree *root, struct tree *leaf, char nome[30]) {
+    if (!leaf) {
+        leaf = (struct tree*)malloc(sizeof(struct tree));
+        leaf->left = leaf->right = NULL;
+        strcpy(leaf->nome, nome);
+        if (!root) return leaf;
+
+        if (strcmp(root->nome, leaf->nome) < 0) {
+            root->right = leaf;
+        } else {
+            root->left = leaf;
+        }
+
+        return leaf;
+    }
+
+    if (strcmp(leaf->nome, nome) < 0) {
+        insert(leaf, leaf->right, nome);
+    } else {
+        insert(leaf, leaf->left, nome);
+    }
 }
 
-int remPassageiro(char voo[8]) {
-    return 0;
+void addPassageiro(struct no *voo) {
+    char nome[30];
+
+    printf("Entre com o nome do passageiro: ");
+    scanf("%s", nome);
+    getchar();
+
+    if (voo->pl == NULL)  {
+        voo->pl = insert(voo->pl, voo->pl, nome);
+    } else {
+        insert(voo->pl, voo->pl, nome);
+    }
 }
 
-void printPassageiros(char voo[8]) {
-
+void remPassageiro(struct no *voo) {
+    return;
 }
 
-int menuVoo(char voo[8]) {
+void emOrdem(struct tree *pl) {
+    if (pl == NULL) return;
+
+    emOrdem(pl->left);
+    printf("%s ", pl->nome);
+    //colocar em uma array
+    emOrdem(pl->right);
+}
+
+void printPassageiros(struct no *voo) {
+    emOrdem(voo->pl);
+}
+
+int menuVoo(struct no *voo) {
     int op = 0;
 
-    printMenuVoo(voo);
-    scanf("> %d", &op);
+    printMenuVoo(voo->id);
+    scanf("%d", &op);
     getchar();
 
     switch(op) {
         case 1:
-            while (addPassageiro(voo) > 0);
+            addPassageiro(voo);
             break;
         case 2:
-            while (remPassageiro(voo) > 0);
+            remPassageiro(voo);
             break;
         case 3:
             printPassageiros(voo);
@@ -140,6 +184,7 @@ void decolar() {
     if (tmp != NULL) {
         printf("Decolagem autorizada do voo %s\n", tmp->id);
         voos->front = voos->front->prox;
+        if (voos->front == NULL) voos->rear = NULL;
         free(tmp);
     } else {
         printf("Não há aviões na fila.");
@@ -157,6 +202,7 @@ void printNVoos() {
 
 int menuPrincipal() {
     int op = 0;
+    struct no *tmp = voos->front;
     char id[8];
 
     printMenuPrincipal();
@@ -171,7 +217,16 @@ int menuPrincipal() {
             printf("Entre com o id do voo: ");
             scanf("%s", id);
             getchar();
-            while (menuVoo(id) > 0);
+
+            for (; tmp != NULL; tmp = tmp->prox)
+                if (strcmp(tmp->id, id) == 0) break;
+
+            if (tmp == NULL) {
+                printf("Voo não encontrado.\n");
+                break;
+            }
+
+            while (menuVoo(tmp) > 0);
             break;
         case 3:
             printVoos(0);
