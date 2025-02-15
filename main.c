@@ -4,6 +4,7 @@
 #include <string.h>
 #include <ctype.h>
 
+
 struct tree {
     char nome[30];
     struct tree *left;
@@ -27,12 +28,24 @@ struct queue {
 struct queue *voos;
 
 
+struct pass {
+    struct pass *prox;
+    char nome[30];
+};
+
+struct pqueue {
+    struct pass *front;
+    struct pass *rear;
+};
+struct pqueue *passageiros;
+
+
 void printMenuVoo(char voo[8]) {
     printf("\n");
     printf("============= OPÇÕES DO VOO %s =============\n", voo);
     printf("1 - Cadastrar nomes\n");
     printf("2 - Remover nomes\n");
-    printf("3 - Exportar manifesto de passageiros\n\n");
+    printf("3 - Manifesto de passageiros\n\n");
     printf("0 - Voltar\n");
     printf("\n");
 }
@@ -67,6 +80,8 @@ void addPassageiro(struct no *voo) {
     scanf("%s", nome);
     getchar();
 
+    voo->np++;
+
     if (voo->pl == NULL)  {
         voo->pl = insert(voo->pl, voo->pl, nome);
     } else {
@@ -78,17 +93,72 @@ void remPassageiro(struct no *voo) {
     return;
 }
 
+void enqueuePassageiro(char nome[30]) {
+    struct pass *passageiro = (struct pass*)malloc(sizeof(struct pass));
+    strcpy(passageiro->nome, nome);
+    passageiro->prox = NULL;
+
+    if (passageiros->rear != NULL) {
+        passageiros->rear->prox = passageiro;
+        passageiros->rear = passageiro;
+    } else {
+        passageiros->front = passageiros->rear = passageiro;
+    }
+}
+
+void dequeuePassageiro(char **nome) {
+    struct pass *tmp2 = passageiros->front;
+    
+    if (tmp2 != NULL) {
+        strcpy(*nome, tmp2->nome);
+        passageiros->front = tmp2->prox;
+        free(tmp2);
+    } else {
+        passageiros->front = passageiros->rear = NULL;
+        *nome = "\0";
+    }
+}
+
 void emOrdem(struct tree *pl) {
     if (pl == NULL) return;
 
     emOrdem(pl->left);
     printf("%s ", pl->nome);
-    //colocar em uma array
+    enqueuePassageiro(pl->nome);
     emOrdem(pl->right);
 }
 
 void printPassageiros(struct no *voo) {
+    char *nome = (char*)malloc(30*sizeof(char));
+    int i;
+    char exp = 'N';
+    char filename[30];
+    FILE *file;
+
+    printf("Lista de passageiros do voo %s em ordem alfabética: ", voo->id);
     emOrdem(voo->pl);
+    printf("\n");
+    printf("Deseja exportar o manifesto [s/N]? ");
+    scanf("%c", &exp);
+
+    if (exp == 's') {
+        sprintf(filename, "%s.txt", voo->id);
+        file = fopen(filename, "w+");
+        fprintf(file, "ID do voo\t\tDestino\t\tEmpresa\t\tModelo\t\t\tN° Passageiros\n");
+        fprintf(file, "%s\t\t%s\t\t%s\t\t%s\t\t%d\n\n", voo->id, voo->dest, voo->empresa, voo->model, voo->np);
+        fprintf(file, "Passageiros:\n");
+    }    
+
+
+    for (i = 0;; i++) {
+        dequeuePassageiro(&nome);
+        if (nome[0] == '\0') break;
+
+        if (exp != 's') continue;
+        fprintf(file, "%d - %s\n", i+1, nome);
+    }
+
+    if (exp == 's') fclose(file);
 }
 
 int menuVoo(struct no *voo) {
@@ -184,6 +254,7 @@ void decolar() {
     if (tmp != NULL) {
         printf("Decolagem autorizada do voo %s\n", tmp->id);
         voos->front = voos->front->prox;
+        //TODO: Liberar lista de passageiros
         if (voos->front == NULL) voos->rear = NULL;
         free(tmp);
     } else {
@@ -252,7 +323,9 @@ void main() {
     setlocale(LC_ALL, "");
 
     voos = (struct queue*)malloc(sizeof(struct queue));
+    passageiros = (struct pqueue*)malloc(sizeof(struct pqueue));
     voos->front = voos->rear = NULL;
+    passageiros->front = passageiros->rear = NULL;
 
     while(menuPrincipal() > 0);
 }
