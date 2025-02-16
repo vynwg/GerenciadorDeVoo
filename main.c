@@ -42,7 +42,7 @@ struct pqueue *passageiros;
 
 void printMenuVoo(char voo[8]) {
     printf("\n");
-    printf("============= OPÇÕES DO VOO %s =============\n", voo);
+    printf("============= OPÇÕES DO VOO \"%s\" =============\n", voo);
     printf("1 - Cadastrar nomes\n");
     printf("2 - Remover nomes\n");
     printf("3 - Manifesto de passageiros\n\n");
@@ -82,15 +82,70 @@ void addPassageiro(struct no *voo) {
 
     voo->np++;
 
-    if (voo->pl == NULL)  {
+    if (!voo->pl)  {
         voo->pl = insert(voo->pl, voo->pl, nome);
     } else {
         insert(voo->pl, voo->pl, nome);
     }
 }
 
+struct tree *removet(struct tree *root, char nome[30], int *status) {
+    struct tree *tmp, *tmp2;
+
+    if (strcmp(root->nome, nome) == 0) {
+        *status = 1;
+
+        if (!root->left && !root->right) {
+            free(root);
+            return NULL;
+        }
+
+        if (!root->right) tmp = root->left;
+        if (!root->left) tmp = root->right;
+        if (!!root->left && !!root->right) {
+            tmp = tmp2 = root->right;
+            for (; !!tmp2->left; tmp2 = tmp2->left);
+            tmp2->left = root->left;
+        }
+
+        free(root);
+        return tmp;
+    }
+
+    if (strcmp(root->nome, nome) < 0) {
+        if (!!root->right)
+            root->right = removet(root->right, nome, status);
+    } else {
+        if (!!root->left)
+            root->left = removet(root->left, nome, status);
+    }
+
+    return root;
+}
+
 void remPassageiro(struct no *voo) {
-    return;
+    char nome[30];
+    int status = 0;
+    struct tree *tmp;
+
+    if (!voo->pl) {
+        printf("A lista de passageiros está vazia.\n");
+        return;
+    }
+
+    printf("Entre com o nome do passageiro: ");
+    scanf("%s", nome);
+    getchar();
+
+    voo->pl = removet(voo->pl, nome, &status);
+
+    if (!status) {
+        printf("Passageiro \"%s\" não encontrado!\n", nome);
+        return;
+    }
+
+    printf("Passageiro \"%s\" removido com sucesso.\n", nome);
+    voo->np--;
 }
 
 void enqueuePassageiro(char nome[30]) {
@@ -98,7 +153,7 @@ void enqueuePassageiro(char nome[30]) {
     strcpy(passageiro->nome, nome);
     passageiro->prox = NULL;
 
-    if (passageiros->rear != NULL) {
+    if (!!passageiros->rear) {
         passageiros->rear->prox = passageiro;
         passageiros->rear = passageiro;
     } else {
@@ -109,7 +164,7 @@ void enqueuePassageiro(char nome[30]) {
 void dequeuePassageiro(char **nome) {
     struct pass *tmp2 = passageiros->front;
     
-    if (tmp2 != NULL) {
+    if (!!tmp2) {
         strcpy(*nome, tmp2->nome);
         passageiros->front = tmp2->prox;
         free(tmp2);
@@ -120,7 +175,7 @@ void dequeuePassageiro(char **nome) {
 }
 
 void emOrdem(struct tree *pl) {
-    if (pl == NULL) return;
+    if (!pl) return;
 
     emOrdem(pl->left);
     printf("%s ", pl->nome);
@@ -135,7 +190,12 @@ void printPassageiros(struct no *voo) {
     char filename[30];
     FILE *file;
 
-    printf("Lista de passageiros do voo %s em ordem alfabética: ", voo->id);
+    if (!voo->pl) {
+        printf("Lista de passageiros vazia!\n");
+        return;
+    }
+
+    printf("Lista de passageiros do voo \"%s\" em ordem alfabética: ", voo->id);
     emOrdem(voo->pl);
     printf("\n");
     printf("Deseja exportar o manifesto [s/N]? ");
@@ -223,7 +283,7 @@ void cadastroVoo() {
     scanf("%s", voo->model);
     getchar();
 
-    if (voos->rear != NULL) {
+    if (!!voos->rear) {
         voos->rear->prox = voo;
         voos->rear = voo;
     } else {
@@ -239,7 +299,7 @@ void printVoos(int i) {
     struct no *tmp = voos->front;
     printf("ID do voo\t\tDestino\t\tEmpresa\t\tModelo\t\t\tN° Passageiros\n");
 
-    for (; tmp != NULL; tmp = tmp->prox) {
+    for (; !!tmp; tmp = tmp->prox) {
         if (i-- >= 0) {
             printVoo(tmp);
             if (i < 0) break;
@@ -249,13 +309,23 @@ void printVoos(int i) {
     }
 }
 
+void liberart(struct tree *root) {
+    if (!!root) {
+        liberart(root->right);
+        liberart(root->left);
+        free(root);
+    }
+}
+
 void decolar() {
     struct no *tmp = voos->front;
-    if (tmp != NULL) {
-        printf("Decolagem autorizada do voo %s\n", tmp->id);
+    if (!!tmp) {
+        printf("Decolagem autorizada do voo \"%s\"\n", tmp->id);
         voos->front = voos->front->prox;
-        //TODO: Liberar lista de passageiros
-        if (voos->front == NULL) voos->rear = NULL;
+        
+        liberart(tmp->pl);
+
+        if (!voos->front) voos->rear = NULL;
         free(tmp);
     } else {
         printf("Não há aviões na fila.");
@@ -266,7 +336,7 @@ void printNVoos() {
     int i = 0;
     struct no *tmp = voos->front;
 
-    for (; tmp != NULL; tmp = tmp->prox) i++;
+    for (; !!tmp; tmp = tmp->prox) i++;
 
     printf("Número de voos na fila: %i\n", i);
 }
@@ -289,11 +359,11 @@ int menuPrincipal() {
             scanf("%s", id);
             getchar();
 
-            for (; tmp != NULL; tmp = tmp->prox)
+            for (; !!tmp; tmp = tmp->prox)
                 if (strcmp(tmp->id, id) == 0) break;
 
-            if (tmp == NULL) {
-                printf("Voo não encontrado.\n");
+            if (!tmp) {
+                printf("Voo \"%s\" não encontrado.\n", id);
                 break;
             }
 
