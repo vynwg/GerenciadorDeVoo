@@ -42,7 +42,7 @@ struct pqueue *passageiros;
 
 void printMenuVoo(char voo[8]) {
     printf("\n");
-    printf("============= OP«’ES DO VOO \"%s\" =============\n", voo);
+    printf("============= OP√á√ïES DO VOO \"%s\" =============\n", voo);
     printf("1 - Cadastrar nomes\n");
     printf("2 - Remover nomes\n");
     printf("3 - Manifesto de passageiros\n\n");
@@ -129,7 +129,7 @@ void remPassageiro(struct no *voo) {
     struct tree *tmp;
 
     if (!voo->pl) {
-        printf("A lista de passageiros est· vazia.\n");
+        printf("A lista de passageiros est√° vazia.\n");
         return;
     }
 
@@ -140,7 +140,7 @@ void remPassageiro(struct no *voo) {
     voo->pl = removet(voo->pl, nome, &status);
 
     if (!status) {
-        printf("Passageiro \"%s\" n„o encontrado!\n", nome);
+        printf("Passageiro \"%s\" n√£o encontrado!\n", nome);
         return;
     }
 
@@ -195,7 +195,7 @@ void printPassageiros(struct no *voo) {
         return;
     }
 
-    printf("Lista de passageiros do voo \"%s\" em ordem alfabÈtica: ", voo->id);
+    printf("Lista de passageiros do voo \"%s\" em ordem alfab√©tica: ", voo->id);
     emOrdem(voo->pl);
     printf("\n");
     printf("Deseja exportar o manifesto [s/N]? ");
@@ -204,7 +204,7 @@ void printPassageiros(struct no *voo) {
     if (exp == 's') {
         sprintf(filename, "%s.txt", voo->id);
         file = fopen(filename, "w+");
-        fprintf(file, "ID do voo\t\tDestino\t\tEmpresa\t\tModelo\t\t\tN∞ Passageiros\n");
+        fprintf(file, "ID do voo\t\tDestino\t\tEmpresa\t\tModelo\t\t\tN¬∞ Passageiros\n");
         fprintf(file, "%s\t\t%s\t\t%s\t\t%s\t\t%d\n\n", voo->id, voo->dest, voo->empresa, voo->model, voo->np);
         fprintf(file, "Passageiros:\n");
     }    
@@ -247,13 +247,13 @@ int menuVoo(struct no *voo) {
 
 void printMenuPrincipal() {
     printf("\n");
-    printf("===================== OP«’ES =====================\n");
+    printf("===================== OP√á√ïES =====================\n");
     printf("1 - Cadastrar voo\n");
     printf("2 - Acessar voo\n");
-    printf("3 - InformaÁıes do primeiro voo\n");
-    printf("4 - InformaÁıes de todos os voos\n");
-    printf("5 - Autorizar decolagem do primeiro avi„o da fila\n");
-    printf("6 - Listar quantidade de aviıes na fila\n\n");
+    printf("3 - Informa√ß√µes do primeiro voo\n");
+    printf("4 - Informa√ß√µes de todos os voos\n");
+    printf("5 - Autorizar decolagem do primeiro avi√£o da fila\n");
+    printf("6 - Listar quantidade de avi√µes na fila\n\n");
     printf("0 - Sair do programa\n");
     printf("\n");
 }
@@ -274,12 +274,12 @@ void cadastroVoo() {
     getchar();
 
     printf("\n");
-    printf("Entre com a empressa aÈrea: ");
+    printf("Entre com a empressa a√©rea: ");
     scanf("%s", voo->empresa);
     getchar();
 
     printf("\n");
-    printf("Entre com o modelo do avi„o: ");
+    printf("Entre com o modelo do avi√£o: ");
     scanf("%s", voo->model);
     getchar();
 
@@ -297,7 +297,7 @@ void printVoo(struct no *voo) {
 
 void printVoos(int i) {
     struct no *tmp = voos->front;
-    printf("ID do voo\t\tDestino\t\tEmpresa\t\tModelo\t\t\tN∞ Passageiros\n");
+    printf("ID do voo\t\tDestino\t\tEmpresa\t\tModelo\t\t\tN¬∞ Passageiros\n");
 
     for (; !!tmp; tmp = tmp->prox) {
         if (i-- >= 0) {
@@ -328,7 +328,7 @@ void decolar() {
         if (!voos->front) voos->rear = NULL;
         free(tmp);
     } else {
-        printf("N„o h· aviıes na fila.");
+        printf("N√£o h√° avi√µes na fila.");
     }
 }
 
@@ -338,7 +338,7 @@ void printNVoos() {
 
     for (; !!tmp; tmp = tmp->prox) i++;
 
-    printf("N˙mero de voos na fila: %i\n", i);
+    printf("N√∫mero de voos na fila: %i\n", i);
 }
 
 int menuPrincipal() {
@@ -363,7 +363,7 @@ int menuPrincipal() {
                 if (strcmp(tmp->id, id) == 0) break;
 
             if (!tmp) {
-                printf("Voo \"%s\" n„o encontrado.\n", id);
+                printf("Voo \"%s\" n√£o encontrado.\n", id);
                 break;
             }
 
